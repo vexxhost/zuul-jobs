@@ -1,0 +1,7 @@
+---
+- name: Run golangci-lint
+  command: golangci-lint run ./...
+  args:
+    chdir: "{{ zuul_work_dir }}"
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ go_bin_path }}"

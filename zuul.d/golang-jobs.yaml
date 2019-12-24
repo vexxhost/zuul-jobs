@@ -1,0 +1,6 @@
+---
+- job:
+    name: golang-golangci-lint
+    parent: unittests
+    pre-run: playbooks/golangci-lint/pre.yaml
+    run: playbooks/golangci-lint/run.yaml

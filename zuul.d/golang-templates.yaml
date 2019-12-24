@@ -1,0 +1,11 @@
+---
+- project-template:
+    name: golang-jobs
+    check:
+      jobs:
+      - golang-go-test
+      - golang-golangci-lint
+    gate:
+      jobs:
+      - golang-go-test
+      - golang-golangci-lint
