@@ -1,0 +1,14 @@
+---
+- name: Download golangci-lint
+  unarchive:
+    remote_src: true
+    src: "https://github.com/golangci/golangci-lint/releases/download/v{{ golintci_lint_version }}/golangci-lint-{{ golintci_lint_version }}-linux-amd64.tar.gz"
+    dest: "{{ ansible_env.HOME }}"
+
+- name: Install golangci-lint
+  become: true
+  copy:
+    remote_src: true
+    src: "{{ ansible_env.HOME }}/golangci-lint-{{ golintci_lint_version }}-linux-amd64/golangci-lint"
+    dest: /usr/local/bin/golangci-lint
+    mode: '0755'
