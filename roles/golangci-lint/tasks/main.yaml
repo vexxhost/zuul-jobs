@@ -1,7 +1,9 @@
 ---
 - name: Run golangci-lint
-  command: golangci-lint run ./...
+  command: golangci-lint run --timeout=30m --enable-all ./...
   args:
     chdir: "{{ zuul_work_dir }}"
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ go_bin_path }}"
+    GOPACKAGESPRINTGOLISTERRORS: "1"
+    GL_DEBUG: "linters_output"
