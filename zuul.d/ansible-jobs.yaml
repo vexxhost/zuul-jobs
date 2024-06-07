@@ -1,5 +1,5 @@
 ---
 - job:
     name: build-ansible-collection
-    pre-run: zuul.d/playbooks/build-ansible-collection/pre.yaml
-    run: zuul.d/playbooks/build-ansible-collection/run.yaml
+    pre-run: playbooks/build-ansible-collection/pre.yaml
+    run: playbooks/build-ansible-collection/run.yaml
