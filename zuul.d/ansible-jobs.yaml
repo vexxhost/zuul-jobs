@@ -3,3 +3,8 @@
     name: build-ansible-collection
     pre-run: playbooks/build-ansible-collection/pre.yaml
     run: playbooks/build-ansible-collection/run.yaml
+
+- job:
+    name: publish-ansible-collection
+    parent: build-ansible-collection
+    post-run: playbooks/build-ansible-collection/publish.yaml
