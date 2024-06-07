@@ -2,7 +2,7 @@
 - project:
     check:
       jobs:
-      - noop
+        - noop
     gate:
       jobs:
-      - noop
+        - noop
