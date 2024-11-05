@@ -1,8 +1,11 @@
----
+- job:
+    name: zuul-jobs-test-ensure-depot
+    run: playbooks/test-ensure-depot/run.yaml
+
 - project:
     check:
       jobs:
-        - noop
+        - zuul-jobs-test-ensure-depot
     gate:
       jobs:
-        - noop
+        - zuul-jobs-test-ensure-depot
