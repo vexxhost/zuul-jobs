@@ -1,0 +1,27 @@
+- name: Download and extract Depot
+  block:
+    - name: Create a temporary file
+      ansible.builtin.tempfile:
+        prefix: depot
+        suffix: .tar.gz
+        state: file
+      register: depot_tar
+
+    - name: Download Depot release
+      ansible.builtin.get_url:
+        url: "https://dl.depot.dev/cli/download/{{ ansible_system | lower }}/{{ ansible_architecture | lower }}/latest"
+        dest: "{{ depot_tar.path }}"
+        force: true
+
+    - name: Extract into /usr/local
+      become: true
+      ansible.builtin.unarchive:
+        src: "{{ depot_tar.path }}"
+        dest: /usr/local
+        remote_src: yes
+        extra_opts: --strip-components=1
+  always:
+    - name: Remove the temporary file
+      ansible.builtin.file:
+        path: "{{ depot_tar.path }}"
+        state: absent

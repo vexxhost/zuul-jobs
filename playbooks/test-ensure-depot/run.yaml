@@ -1,0 +1,7 @@
+- hosts: all
+  roles:
+    - ensure-depot
+
+  post-tasks:
+    - name: Ensure Depot runs
+      shell: depot --version

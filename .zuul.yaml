@@ -1,0 +1,12 @@
+- job:
+    name: zuul-jobs-test-ensure-depot
+    run: playbooks/test-ensure-depot/run.yaml
+
+- project:
+    name: vexxhost/zuul-jobs
+    check:
+      jobs:
+        - zuul-jobs-test-ensure-depot
+    gate:
+      jobs:
+        - zuul-jobs-test-ensure-depot
