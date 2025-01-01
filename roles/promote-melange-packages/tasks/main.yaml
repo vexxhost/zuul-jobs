@@ -1,0 +1,80 @@
+- name: Query Zuul API for package information
+  ansible.builtin.uri:
+    url: "{{ promote_melange_packages_api }}/builds?{{ promote_melange_packages_query }}"
+  register: promote_melange_packages_build
+
+- name: Parse build response
+  ansible.builtin.set_fact:
+    promote_melange_packages_build: "{{ promote_melange_packages_build.json[0] }}"
+
+- name: Download, index and upload artifacts
+  block:
+    - name: Create a temporary folder for packages
+      ansible.builtin.tempfile:
+        state: directory
+      register: promote_melange_packages_workdir
+
+    - name: Generate fact with all the APK packages
+      ansible.builtin.set_fact:
+        promote_melange_packages_artifacts: "{{ promote_melange_packages_build.artifacts | selectattr('metadata.type', 'equalto', 'apk') | list }}"
+
+    - name: Create folders for the architectures
+      ansible.builtin.file:
+        path: "{{ promote_melange_packages_workdir.path }}/{{ item }}"
+        state: directory
+      loop: "{{ promote_melange_packages_artifacts | map(attribute='metadata.arch') | unique }}"
+
+    - name: Download artifacts
+      ansible.builtin.get_url:
+        url: "{{ item.url }}"
+        dest: "{{ promote_melange_packages_workdir.path }}/{{ item.metadata.arch }}/"
+      loop: "{{ promote_melange_packages_artifacts }}"
+
+    - name: Check if APKINDEX exists
+      ansible.builtin.stat:
+        path: "{{ promote_melange_packages_static_path }}/{{ item }}/APKINDEX.tar.gz"
+      loop: "{{ promote_melange_packages_artifacts | map(attribute='metadata.arch') | unique }}"
+      register: promote_melange_packages_check_apkindex
+
+    - name: Copy APKINDEX from repository (if it exists)
+      ansible.builtin.copy:
+        src: "{{ promote_melange_packages_static_path }}/{{ item.item }}/APKINDEX.tar.gz"
+        dest: "{{ promote_melange_packages_workdir.path }}/{{ item.item }}"
+        remote_src: true
+      when: item.stat.exists
+      loop: "{{ promote_melange_packages_check_apkindex.results }}"
+
+    - name: Update & sign index
+      block:
+        - name: Generate a temporary file
+          ansible.builtin.tempfile:
+            prefix: melange
+            suffix: .rsa
+            state: file
+          register: promote_melange_packages_signing_key_file
+
+        - name: Write out signing key
+          ansible.builtin.copy:
+            content: "{{ promote_melange_packages_signing_key }}"
+            dest: "{{ promote_melange_packages_signing_key_file.path }}"
+
+        - name: Update & sign index
+          ansible.builtin.shell: melange index --arch {{ item }} --merge --signing-key {{ promote_melange_packages_signing_key_file.path }} *.apk
+          args:
+            chdir: "{{ promote_melange_packages_workdir.path }}/{{ item }}"
+          loop: "{{ promote_melange_packages_artifacts | map(attribute='metadata.arch') | unique }}"
+      always:
+      - name: Shred the signing key file
+        ansible.builtin.command: shred --remove --zero {{ promote_melange_packages_signing_key_file.path }}
+
+    - name: Copy packages & index
+      delegate_to: "{{ inventory_hostname }}"
+      ansible.posix.synchronize:
+        src: "{{ promote_melange_packages_workdir.path }}/{{ item }}"
+        dest: "{{ promote_melange_packages_static_path }}"
+      loop: "{{ promote_melange_packages_artifacts | map(attribute='metadata.arch') | unique }}"
+  always:
+    - name: Clean up temporary folder
+      ansible.builtin.file:
+        path: "{{ promote_melange_packages_workdir.path }}"
+        state: absent

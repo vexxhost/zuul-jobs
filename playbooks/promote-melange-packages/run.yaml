@@ -1,0 +1,3 @@
+- hosts: "{{ promote_melange_packages_static_server }}"
+  roles:
+    - promote-melange-packages

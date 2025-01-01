@@ -1,0 +1,2 @@
+zuul_work_dir: "{{ zuul.project.src_dir }}"
+promote_melange_packages_query: "change={{ zuul.change }}&patchset={{ zuul.patchset }}&pipeline={{ promote_melange_packages_pipeline }}&job_name={{ promote_melange_packages_job }}"
