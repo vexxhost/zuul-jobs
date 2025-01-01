@@ -1,0 +1,5 @@
+---
+- job:
+    name: build-melange-packages
+    pre-run: playbooks/build-melange-packages/pre.yaml
+    run: playbooks/build-melange-packages/run.yaml
