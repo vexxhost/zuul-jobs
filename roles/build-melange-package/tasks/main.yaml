@@ -63,9 +63,9 @@
     data:
       zuul:
         artifacts:
-          - arch: "{{ item.split('|')[0] }}"
-            name: "{{ item.split('|')[1] }}"
-            variant: "{{ item.split('|')[2] }}"
-            version: "{{ item.split('|')[3] }}"
-            url: "artifacts/{{ item.split('|')[0] }}/{{ item.split('|')[2] }}-{{ item.split('|')[3] }}.apk"
+          - name: "{{ package_name }}"
+            url: "artifacts/{{ arch }}/{{ package_name }}"
   loop: "{{ build_melange_package_log.content | b64decode | split('\n') }}"
+  var:
+    arch: "{{ item.split('|')[0] }}"
+    package_name: "{{ item.split('|')[2] }}-{{ item.split('|')[3] }}.apk"
