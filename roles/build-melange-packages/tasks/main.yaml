@@ -8,5 +8,7 @@
   include_role:
     name: build-melange-package
   loop: "{{ build_melange_packages_file_list.stdout_lines }}"
+  loop_control:
+    loop_var: build_melange_package_file_name
   vars:
-    build_melange_package_name: "{{ item.split('.') | first }}"
+    build_melange_package_name: "{{ build_melange_package_file_name.split('.') | first }}"
