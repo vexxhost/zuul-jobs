@@ -17,6 +17,11 @@
       ansible.builtin.command: melange keygen {{ build_melange_package_signing_key_file.path }}
       when: build_melange_package_signing_key is not defined
 
+    - name: Ensure source directory exists
+      ansible.builtin.file:
+        path: "{{ zuul_work_dir }}/{{ build_melange_package_name }}"
+        state: directory
+
     - name: Build Melange package
       ansible.builtin.command: >-
         melange build
