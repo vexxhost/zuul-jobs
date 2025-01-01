@@ -1,57 +1,57 @@
-# - name: Write signing key and build package
-#   block:
-#     - name: Generate a temporary file
-#       ansible.builtin.tempfile:
-#         prefix: melange
-#         suffix: .rsa
-#         state: file
-#       register: build_melange_package_signing_key_file
+- name: Write signing key and build package
+  block:
+    - name: Generate a temporary file
+      ansible.builtin.tempfile:
+        prefix: melange
+        suffix: .rsa
+        state: file
+      register: build_melange_package_signing_key_file
 
-#     - name: Write out signing key
-#       ansible.builtin.copy:
-#         content: "{{ build_melange_package_signing_key }}"
-#         dest: "{{ build_melange_package_signing_key_file.path }}"
-#       when: build_melange_package_signing_key is defined
+    - name: Write out signing key
+      ansible.builtin.copy:
+        content: "{{ build_melange_package_signing_key }}"
+        dest: "{{ build_melange_package_signing_key_file.path }}"
+      when: build_melange_package_signing_key is defined
 
-#     - name: Generate signing key
-#       ansible.builtin.command: melange keygen {{ build_melange_package_signing_key_file.path }}
-#       when: build_melange_package_signing_key is not defined
+    - name: Generate signing key
+      ansible.builtin.command: melange keygen {{ build_melange_package_signing_key_file.path }}
+      when: build_melange_package_signing_key is not defined
 
-#     - name: Ensure source directory exists
-#       ansible.builtin.file:
-#         path: "{{ zuul_work_dir }}/{{ build_melange_package_name }}"
-#         state: directory
+    - name: Ensure source directory exists
+      ansible.builtin.file:
+        path: "{{ zuul_work_dir }}/{{ build_melange_package_name }}"
+        state: directory
 
-#     - name: Build Melange package
-#       ansible.builtin.command: >-
-#         melange build
-#           --arch {{ build_melange_package_arch }}
-#           --generate-index={{ build_melange_package_generate_index }}
-#           {% for repo in build_melange_package_repositories %}
-#           --repository-append {{ repo.url }}
-#           --keyring-append {{ repo.key }}
-#           {% endfor %}
-#           --signing-key {{ build_melange_package_signing_key_file.path }}
-#           --git-repo-url=https://{{ zuul.project.canonical_name }}
-#           --git-commit={{ zuul.commit_id }}
-#           --source-dir=./{{ build_melange_package_name }}
-#           {% if build_melange_env_file is defined %}
-#           --env-file {{ build_melange_env_file }}
-#           {% endif %}
-#           {% if build_melange_package_pipeline_dir is defined %}
-#           --pipeline-dir {{ build_melange_package_pipeline_dir }}
-#           {% endif %}
-#           {% if build_melange_package_license is defined %}
-#           --license {{ build_melange_package_license }}
-#           {% endif %}
-#           --out-dir={{ zuul_output_dir }}/artifacts
-#           --create-build-log
-#           {{ build_melange_package_name }}.yaml
-#       args:
-#         chdir: "{{ zuul_work_dir }}"
-#   always:
-#     - name: Shred the signing key file
-#       ansible.builtin.command: shred --remove --zero {{ build_melange_package_signing_key_file.path }}
+    - name: Build Melange package
+      ansible.builtin.command: >-
+        melange build
+          --arch {{ build_melange_package_arch }}
+          --generate-index={{ build_melange_package_generate_index }}
+          {% for repo in build_melange_package_repositories %}
+          --repository-append {{ repo.url }}
+          --keyring-append {{ repo.key }}
+          {% endfor %}
+          --signing-key {{ build_melange_package_signing_key_file.path }}
+          --git-repo-url=https://{{ zuul.project.canonical_name }}
+          --git-commit={{ zuul.commit_id }}
+          --source-dir=./{{ build_melange_package_name }}
+          {% if build_melange_env_file is defined %}
+          --env-file {{ build_melange_env_file }}
+          {% endif %}
+          {% if build_melange_package_pipeline_dir is defined %}
+          --pipeline-dir {{ build_melange_package_pipeline_dir }}
+          {% endif %}
+          {% if build_melange_package_license is defined %}
+          --license {{ build_melange_package_license }}
+          {% endif %}
+          --out-dir={{ zuul_output_dir }}/artifacts
+          --create-build-log
+          {{ build_melange_package_name }}.yaml
+      args:
+        chdir: "{{ zuul_work_dir }}"
+  always:
+    - name: Shred the signing key file
+      ansible.builtin.command: shred --remove --zero {{ build_melange_package_signing_key_file.path }}
 
 - name: Slurp the built log
   ansible.builtin.slurp:
