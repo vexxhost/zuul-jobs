@@ -45,9 +45,27 @@
           --license {{ build_melange_package_license }}
           {% endif %}
           --out-dir={{ zuul_output_dir }}/artifacts
+          --create-build-log
           {{ build_melange_package_name }}.yaml
       args:
         chdir: "{{ zuul_work_dir }}"
   always:
     - name: Shred the signing key file
       ansible.builtin.command: shred --remove --zero {{ build_melange_package_signing_key_file.path }}
+
+- name: Slurp the built log
+  ansible.builtin.slurp:
+    src: "{{ zuul_work_dir }}/packages.log"
+  register: build_melange_package_log
+
+- name: Return built artifacts to Zuul
+  zuul_return:
+    data:
+      zuul:
+        artifacts:
+          - arch: "{{ item.split('|')[0] }}"
+            name: "{{ item.split('|')[1] }}"
+            variant: "{{ item.split('|')[2] }}"
+            version: "{{ item.split('|')[3] }}"
+            url: "artifacts/{{ item.split('|')[0] }}/{{ item.split('|')[2] }}-{{ item.split('|')[3] }}.apk"
+  loop: "{{ build_melange_package_log.content | b64decode | split('\n') }}"
