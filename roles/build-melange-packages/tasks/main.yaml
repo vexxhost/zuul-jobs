@@ -1,5 +1,5 @@
 - name: Get list of changed packages
-  ansible.builtin.command: git diff --name-only HEAD~1
+  ansible.builtin.command: git diff --name-only HEAD~1 '*.yaml' ':!.zuul.yaml'
   register: build_melange_packages_file_list
   args:
     chdir: "{{ zuul_work_dir }}"
