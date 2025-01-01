@@ -65,6 +65,9 @@
         artifacts:
           - name: "{{ package_name }}"
             url: "artifacts/{{ arch }}/{{ package_name }}"
+            metadata:
+              arch: "{{ arch }}"
+              type: apk
   loop: "{{ (build_melange_package_log.content | b64decode).splitlines() }}"
   vars:
     arch: "{{ item.split('|')[0] }}"
