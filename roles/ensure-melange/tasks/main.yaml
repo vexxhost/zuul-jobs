@@ -27,6 +27,7 @@
         state: absent
 
 - name: Install dependencies
+  become: true
   ansible.builtin.package:
     name: bubblewrap
     state: present
