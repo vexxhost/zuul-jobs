@@ -66,6 +66,6 @@
           - name: "{{ package_name }}"
             url: "artifacts/{{ arch }}/{{ package_name }}"
   loop: "{{ build_melange_package_log.content | b64decode | split('\n') }}"
-  var:
+  vars:
     arch: "{{ item.split('|')[0] }}"
     package_name: "{{ item.split('|')[2] }}-{{ item.split('|')[3] }}.apk"
