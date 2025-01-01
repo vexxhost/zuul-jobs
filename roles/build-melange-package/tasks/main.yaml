@@ -39,6 +39,7 @@
           {% if build_melange_package_license is defined %}
           --license {{ build_melange_package_license }}
           {% endif %}
+          --out-dir={{ zuul_output_dir }}/artifacts
           {{ build_melange_package_name }}.yaml
       args:
         chdir: "{{ zuul_work_dir }}"

@@ -25,3 +25,8 @@
       ansible.builtin.file:
         path: "{{ ensure_melange_tar_gz.path }}"
         state: absent
+
+- name: Install dependencies
+  ansible.builtin.package:
+    name: bubblewrap
+    state: present
