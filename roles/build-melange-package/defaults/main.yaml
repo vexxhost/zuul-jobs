@@ -1,0 +1,8 @@
+build_melange_package_arch: host
+build_melange_package_generate_index: false
+
+build_melange_package_repositories:
+  - url: https://packages.wolfi.dev/os
+    key: https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+
+zuul_work_dir: "{{ zuul.project.src_dir }}"

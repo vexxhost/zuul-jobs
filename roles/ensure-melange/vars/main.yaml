@@ -1,0 +1,3 @@
+ensure_melange_architecture_map:
+  aarch64: arm64
+  x86_64: amd64

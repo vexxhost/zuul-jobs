@@ -1,0 +1,27 @@
+- name: Download and extract Melange
+  block:
+    - name: Create a temporary file
+      ansible.builtin.tempfile:
+        prefix: melange
+        suffix: .tar.gz
+        state: file
+      register: ensure_melange_tar_gz
+
+    - name: Download Melange release
+      ansible.builtin.get_url:
+        url: "https://github.com/chainguard-dev/melange/releases/download/v{{ ensure_melange_version }}/melange_{{ ensure_melange_version }}_{{ ansible_system | lower }}_{{ ensure_melange_architecture_map[ansible_architecture] | lower }}.tar.gz"
+        dest: "{{ ensure_melange_tar_gz.path }}"
+        force: true
+
+    - name: Extract into /usr/local/bin
+      become: true
+      ansible.builtin.unarchive:
+        src: "{{ ensure_melange_tar_gz.path }}"
+        dest: /usr/local/bin
+        remote_src: yes
+        extra_opts: --strip-components=1
+  always:
+    - name: Remove the temporary file
+      ansible.builtin.file:
+        path: "{{ ensure_melange_tar_gz.path }}"
+        state: absent
