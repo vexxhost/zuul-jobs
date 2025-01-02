@@ -2,9 +2,10 @@
   tasks:
     - name: Add repository server to hosts
       ansible.builtin.add_host:
-        name: "{{ promote_melange_packages_static_server }}"
+        name: static-server
+        ansible_host: "{{ promote_melange_packages_static_server_host }}"
         ansible_user: "{{ promote_melange_packages_static_server_user | default('ubuntu') }}"
 
-- hosts: "{{ promote_melange_packages_static_server }}"
+- hosts: static-server
   roles:
     - ensure-melange
