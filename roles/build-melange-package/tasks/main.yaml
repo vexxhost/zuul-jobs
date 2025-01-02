@@ -11,11 +11,11 @@
       ansible.builtin.copy:
         content: "{{ build_melange_package_signing_key }}"
         dest: "{{ build_melange_package_signing_key_file.path }}"
-      when: build_melange_package_signing_key is defined
+      when: zuul.post_review | bool
 
     - name: Generate signing key
       ansible.builtin.command: melange keygen {{ build_melange_package_signing_key_file.path }}
-      when: build_melange_package_signing_key is not defined
+      when: not zuul.post_review | bool
 
     - name: Ensure source directory exists
       ansible.builtin.file:
