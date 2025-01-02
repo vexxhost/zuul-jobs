@@ -55,7 +55,7 @@
 
         - name: Write out signing key
           ansible.builtin.copy:
-            content: "{{ promote_melange_packages_signing_key }}"
+            content: "{{ promote_melange_packages_signing_key.private_key }}"
             dest: "{{ promote_melange_packages_signing_key_file.path }}"
 
         - name: Update & sign index
