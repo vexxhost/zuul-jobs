@@ -6,6 +6,11 @@
         ansible_host: "{{ promote_melange_packages_static_server_host }}"
         ansible_user: "{{ promote_melange_packages_static_server_user | default('ubuntu') }}"
 
+    - name: Add repository server to known hosts
+      ansible.builtin.known_hosts:
+        name: "{{ promote_melange_packages_static_server_host }}"
+        key: "{{ promote_melange_packages_static_server_known_hosts }}"
+
 - hosts: static-server
   roles:
     - ensure-melange
