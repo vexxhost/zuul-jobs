@@ -6,7 +6,6 @@
 
 - job:
     name: promote-melange-packages
-    pre-run: playbooks/promote-melange-packages/pre.yaml
     run: playbooks/promote-melange-packages/run.yaml
     nodeset:
       nodes: []
