@@ -52,23 +52,3 @@
   always:
     - name: Shred the signing key file
       ansible.builtin.command: shred --remove --zero {{ build_melange_package_signing_key_file.path }}
-
-- name: Slurp the built log
-  ansible.builtin.slurp:
-    src: "{{ zuul_work_dir }}/packages.log"
-  register: build_melange_package_log
-
-- name: Return built artifacts to Zuul
-  zuul_return:
-    data:
-      zuul:
-        artifacts:
-          - name: "{{ package_name }}"
-            url: "artifacts/{{ arch }}/{{ package_name }}"
-            metadata:
-              arch: "{{ arch }}"
-              type: apk
-  loop: "{{ (build_melange_package_log.content | b64decode).splitlines() }}"
-  vars:
-    arch: "{{ item.split('|')[0] }}"
-    package_name: "{{ item.split('|')[2] }}-{{ item.split('|')[3] }}.apk"
