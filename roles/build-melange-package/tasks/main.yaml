@@ -9,7 +9,7 @@
 
     - name: Write out signing key
       ansible.builtin.copy:
-        content: "{{ build_melange_package_signing_key }}"
+        content: "{{ build_melange_package_signing_key.private_key }}"
         dest: "{{ build_melange_package_signing_key_file.path }}"
       when: zuul.post_review | bool
 
