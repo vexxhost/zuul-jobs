@@ -4,14 +4,37 @@
   args:
     chdir: "{{ zuul_work_dir }}"
 
-- name: Build package
-  include_role:
-    name: build-melange-package
-  loop: "{{ build_melange_packages_file_list.stdout_lines }}"
-  loop_control:
-    loop_var: build_melange_package_file_name
-  vars:
-    build_melange_package_name: "{{ build_melange_package_file_name.split('.') | first }}"
+- name: Write signing key and build packages
+  block:
+    - name: Generate a temporary file
+      ansible.builtin.tempfile:
+        prefix: melange
+        suffix: .rsa
+        state: file
+      register: build_melange_package_signing_key_file
+
+    - name: Write out signing key
+      ansible.builtin.copy:
+        content: "{{ build_melange_package_signing_key.private_key }}"
+        dest: "{{ build_melange_package_signing_key_file.path }}"
+      when: zuul.post_review | bool
+
+    - name: Generate signing key
+      ansible.builtin.command: melange keygen {{ build_melange_package_signing_key_file.path }}
+      when: not zuul.post_review | bool
+
+    - name: Build package
+      include_role:
+        name: build-melange-package
+      loop: "{{ build_melange_packages_file_list.stdout_lines }}"
+      loop_control:
+        loop_var: build_melange_package_file_name
+      vars:
+        build_melange_package_name: "{{ build_melange_package_file_name.split('.') | first }}"
+  always:
+    - name: Shred the signing key file
+      ansible.builtin.command: shred --remove --zero {{ build_melange_package_signing_key_file.path }}
+
 
 - name: Slurp the built log
   ansible.builtin.slurp:
