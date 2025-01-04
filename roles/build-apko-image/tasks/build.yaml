@@ -10,6 +10,8 @@
       {% for tag in zj_image.tags | default(['latest']) -%}
       {{ buildset_registry_alias }}:{{ buildset_registry.port }}/{{ zj_image.repository }}:{{ tag }}
       {% endfor -%}
+  args:
+    chdir: "{{ zuul_work_dir }}"
   when:
     - buildset_registry is defined
     - buildset_registry | bool
@@ -22,3 +24,5 @@
       {{ zj_image.repository }}:change_{{ zuul.change }}_{{ tag }}
       {{ zj_image.repository }}:{{ tag }}
       {% endfor -%}
+  args:
+    chdir: "{{ zuul_work_dir }}"
