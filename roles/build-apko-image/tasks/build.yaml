@@ -14,7 +14,6 @@
     chdir: "{{ zuul_work_dir }}"
   when:
     - buildset_registry is defined
-    - buildset_registry | bool
 
 - name: Build and load image locally
   ansible.builtin.command: >-
