@@ -1,0 +1,5 @@
+- job:
+    name: ci-build-apko-image
+    parent: ci-build-container-image-base
+    pre-run: playbooks/apko-image/pre.yaml
+    run: playbooks/apko-image/run.yaml

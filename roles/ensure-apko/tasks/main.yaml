@@ -1,0 +1,33 @@
+- name: Download and extract apko
+  block:
+    - name: Create a temporary file
+      ansible.builtin.tempfile:
+        prefix: apko
+        suffix: .tar.gz
+        state: file
+      register: ensure_apko_tar_gz
+
+    - name: Download apko release
+      ansible.builtin.get_url:
+        url: "https://github.com/chainguard-dev/apko/releases/download/v{{ ensure_apko_version }}/apko_{{ ensure_apko_version }}_{{ ansible_system | lower }}_{{ ensure_apko_architecture_map[ansible_architecture] | lower }}.tar.gz"
+        dest: "{{ ensure_apko_tar_gz.path }}"
+        force: true
+
+    - name: Extract into /usr/local/bin
+      become: true
+      ansible.builtin.unarchive:
+        src: "{{ ensure_apko_tar_gz.path }}"
+        dest: /usr/local/bin
+        remote_src: yes
+        extra_opts: --strip-components=1
+  always:
+    - name: Remove the temporary file
+      ansible.builtin.file:
+        path: "{{ ensure_apko_tar_gz.path }}"
+        state: absent
+
+- name: Install dependencies
+  become: true
+  ansible.builtin.package:
+    name: bubblewrap
+    state: present
