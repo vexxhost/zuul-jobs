@@ -40,6 +40,6 @@
 
 - name: Build and push each image using buildx.
   include_tasks: build.yaml
-  loop: "{{ apko_images }}"
+  loop: "{{ container_images }}"
   loop_control:
     loop_var: zj_image
