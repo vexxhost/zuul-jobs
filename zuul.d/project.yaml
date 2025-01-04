@@ -4,7 +4,7 @@
     vars:
       ensure_apko_version: 0.22.4
       container_images:
-        - file: testdata/ci-build-apko-image/kubernetes-entrypoint.yaml
+        - container_filename: testdata/ci-build-apko-image/kubernetes-entrypoint.yaml
           repository: harbor.atmosphere.dev/library/kubernetes-entrypoint
 
 - project:

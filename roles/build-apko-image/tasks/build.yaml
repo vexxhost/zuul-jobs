@@ -2,7 +2,7 @@
   ansible.builtin.set_fact:
     apko_publish_command: >-
       apko publish
-        {{ zj_image.file }}
+        {{ zj_image.container_filename }}
 
 - name: Build and push image for buildset registry
   ansible.builtin.command: >-
