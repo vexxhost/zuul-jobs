@@ -1,0 +1,24 @@
+- name: Set base apko publish command
+  ansible.builtin.set_fact:
+    apko_publish_command: >-
+      apko publish
+        {{ zj_image.file }}
+
+- name: Build and push image for buildset registry
+  ansible.builtin.command: >-
+    {{ apko_publish_command }}
+      {% for tag in zj_image.tags | default(['latest']) -%}
+      {{ buildset_registry_alias }}:{{ buildset_registry.port }}/{{ zj_image.repository }}:{{ tag }}
+      {% endfor -%}
+  when:
+    - buildset_registry is defined
+    - buildset_registry | bool
+
+- name: Build and load image locally
+  ansible.builtin.command: >-
+    {{ apko_publish_command }}
+      --local
+      {% for tag in zj_image.tags | default(['latest']) -%}
+      {{ zj_image.repository }}:change_{{ zuul.change }}_{{ tag }}
+      {{ zj_image.repository }}:{{ tag }}
+      {% endfor -%}

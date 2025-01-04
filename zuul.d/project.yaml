@@ -1,11 +1,16 @@
 - job:
-    name: zuul-jobs-test-ensure-depot
-    run: playbooks/test-ensure-depot/run.yaml
+    name: zuul-jobs-test-build-apko-image
+    parent: ci-build-apko-image
+    vars:
+      ensure_apko_version: 0.22.4
+      apko_images:
+        - file: testdata/ci-build-apko-image/kubernetes-entrypoint.yaml
+          repository: harbor.atmosphere.dev/library/kubernetes-entrypoint
 
 - project:
     check:
       jobs:
-        - zuul-jobs-test-ensure-depot
+        - zuul-jobs-test-build-apko-image
     gate:
       jobs:
-        - zuul-jobs-test-ensure-depot
+        - zuul-jobs-test-build-apko-image

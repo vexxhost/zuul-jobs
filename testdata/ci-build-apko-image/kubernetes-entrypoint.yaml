@@ -1,0 +1,19 @@
+archs:
+ - amd64
+ - arm64
+
+contents:
+  keyring:
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    - https://packages.atmosphere.dev/oss/signing.rsa.pub
+  repositories:
+    - https://packages.wolfi.dev/os
+    - https://packages.atmosphere.dev/oss/2024.2
+  packages:
+    - kubernetes-entrypoint
+
+accounts:
+  run-as: 65534
+
+entrypoint:
+  command: /usr/bin/kubernetes-entrypoint
