@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install package
+  become: true
   ansible.builtin.package:
     name: buildah
     state: present

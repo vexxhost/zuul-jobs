@@ -10,12 +10,14 @@
     name: set-buildset-registry-alias-fact
 
 - name: Install emulators
+  become: true
   ansible.builtin.package:
     name: ["binfmt-support", "qemu-user-static"]
     state: present
   when: "{{ container_images | selectattr('arch', 'defined') | list }}"
 
 - name: Build images
+  become: true
   ansible.builtin.command: >-
     buildah build-using-dockerfile {{ zj_image.path | default('.') }}
     {% if containerfile %}
@@ -47,6 +49,7 @@
     containerfile: "{{ zj_image.container_filename | default(container_filename) | default('') }}"
 
 - name: Load images into Docker daemon
+  become: true
   ansible.builtin.command: >-
     buildah push {{ zj_image.repository }}:{{ tag }}
     {% for tag in zj_image.tags | default(['latest']) -%}
@@ -59,6 +62,7 @@
   when: not buildset_registry | default(false)
 
 - name: Push images into buildset registry
+  become: true
   ansible.builtin.command: >-
     buildah push {{ zj_image.repository }}:{{ tag }}
     {% for tag in zj_image.tags | default(['latest']) -%}
