@@ -18,7 +18,7 @@
         fail_msg: "{{ item.msg }}"
       loop:
         - that:
-            - '"Skip-Release-Notes" in zuul.change_message'
+            - '"Skip-Release-Notes" not in zuul.change_message'
             - assert_releasenotes_exist_change_files.keys() | select('match', '^releasenotes/') | length > 0
           msg: "Missing release note in commit message, please create one using `reno` (or add `Skip-Release-Notes` to your commit to skip)."
       loop_control:
