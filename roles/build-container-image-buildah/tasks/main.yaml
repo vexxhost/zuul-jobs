@@ -43,6 +43,8 @@
       --manifest {{ zj_image.repository }}:{{ tag }}
     {% endfor -%}
     {{ zj_image.path | default('.') }}
+  args:
+    chdir: "{{ zuul_work_dir }}/{{ zj_image.context }}"
   loop: "{{ container_images }}"
   loop_control:
     loop_var: zj_image
