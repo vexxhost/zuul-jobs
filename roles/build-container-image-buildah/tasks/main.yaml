@@ -39,9 +39,7 @@
     {% if zj_image.arch | default(false) -%}
       --platform {{ zj_image.arch | join(',') }}
     {% endif -%}
-    {% for tag in zj_image.tags | default(['latest']) -%}
-      --manifest {{ zj_image.repository }}:{{ tag }}
-    {% endfor -%}
+    --manifest {{ zj_image.repository }}:{{ zuul.change }}
     {{ zj_image.path | default('.') }}
   args:
     chdir: "{{ zuul_work_dir }}/{{ zj_image.context }}"
@@ -54,7 +52,7 @@
 - name: Load images into Docker daemon
   become: true
   ansible.builtin.command: >-
-    buildah push {{ zj_image.repository }}:{{ tag }}
+    buildah push {{ zj_image.repository }}:{{ zuul.change }}
     {% for tag in zj_image.tags | default(['latest']) -%}
       docker-daemon:{{ zj_image.repository }}:change_{{ zuul.change }}_{{ tag }}
       docker-daemon:{{ zj_image.repository }}:{{ tag }}
@@ -67,7 +65,7 @@
 - name: Push images into buildset registry
   become: true
   ansible.builtin.command: >-
-    buildah push {{ zj_image.repository }}:{{ tag }}
+    buildah push {{ zj_image.repository }}:{{ zuul.change }}
     {% for tag in zj_image.tags | default(['latest']) -%}
       docker://{{ buildset_registry_alias }}:{{ buildset_registry.port }}/{{ zj_image.repository }}:{{ tag }}
     {% endfor -%}
