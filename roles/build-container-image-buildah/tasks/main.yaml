@@ -1,0 +1,70 @@
+# Copyright (c) 2025 VEXXHOST, Inc.
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Set "buildset_registry" fact
+  ansible.builtin.include_role:
+    name: set-buildset-registry-fact
+
+- name: Set "buildset_registry_alias" fact
+  ansible.builtin.include_role:
+    name: set-buildset-registry-alias-fact
+
+- name: Install emulators
+  ansible.builtin.package:
+    name: ["binfmt-support", "qemu-user-static"]
+    state: present
+  when: "{{ container_images | selectattr('arch', 'defined') | list }}"
+
+- name: Build images
+  ansible.builtin.command: >-
+    buildah build-using-dockerfile {{ zj_image.path | default('.') }}
+    {% if containerfile %}
+      --file {{ containerfile }}
+    {% endif %}
+    {% if zj_image.target | default(false) -%}
+      --target {{ zj_image.target }}
+    {% endif -%}
+    {% for build_arg in zj_image.build_args | default([]) -%}
+      --build-arg {{ build_arg }}
+    {% endfor -%}
+    {% for label in zj_image.labels | default([]) -%}
+      --label "{{ label }}"
+    {% endfor %}
+    {% if zuul.change | default(false) -%}
+      --label "org.zuul-ci.change={{ zuul.change }}"
+      --label "org.zuul-ci.change_url={{ zuul.change_url }}"
+    {% endif -%}
+    {% if zj_image.arch | default(false) -%}
+      --platform {{ zj_image.arch | join(',') }}
+    {% endif -%}
+    {% for tag in zj_image.tags | default(['latest']) -%}
+      --manifest {{ zj_image.repository }}:{{ tag }}
+    {% endfor -%}
+  loop: "{{ container_images }}"
+  loop_control:
+    loop_var: zj_image
+  vars:
+    containerfile: "{{ zj_image.container_filename | default(container_filename) | default('') }}"
+
+- name: Load images into Docker daemon
+  ansible.builtin.command: >-
+    buildah push {{ zj_image.repository }}:{{ tag }}
+    {% for tag in zj_image.tags | default(['latest']) -%}
+      docker-daemon:{{ zj_image.repository }}:change_{{ zuul.change }}_{{ tag }}
+      docker-daemon:{{ zj_image.repository }}:{{ tag }}
+    {% endfor -%}
+  loop: "{{ container_images }}"
+  loop_control:
+    loop_var: zj_image
+  when: not buildset_registry | default(false)
+
+- name: Push images into buildset registry
+  ansible.builtin.command: >-
+    buildah push {{ zj_image.repository }}:{{ tag }}
+    {% for tag in zj_image.tags | default(['latest']) -%}
+      docker://{{ buildset_registry_alias }}:{{ buildset_registry.port }}/{{ zj_image.repository }}:{{ tag }}
+    {% endfor -%}
+  loop: "{{ container_images }}"
+  loop_control:
+    loop_var: zj_image
+  when: buildset_registry | default(false)

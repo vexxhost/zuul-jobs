@@ -1,0 +1,16 @@
+- name: Check for results.json
+  stat:
+    path: "{{ zuul.executor.result_data_file }}"
+  register: result_json_stat
+  delegate_to: localhost
+
+# This can be removed if we add this functionality to Zuul directly
+- name: Load information from zuul_return
+  set_fact:
+    buildset_registry: "{{ (lookup('file', zuul.executor.result_data_file) | from_json)['secret_data']['buildset_registry'] }}"
+  when:
+    - buildset_registry is not defined
+    - result_json_stat.stat.exists
+    - result_json_stat.stat.size > 0
+    - "'buildset_registry' in (lookup('file', zuul.executor.result_data_file) | from_json).get('secret_data')"
+  no_log: true

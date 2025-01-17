@@ -1,0 +1,7 @@
+# Copyright (c) 2025 VEXXHOST, Inc.
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install package
+  ansible.builtin.package:
+    name: buildah
+    state: present
