@@ -12,7 +12,7 @@
 - name: Install emulators
   become: true
   ansible.builtin.package:
-    name: ["binfmt-support", "qemu-user-static"]
+    name: ["qemu-user-static-aarch64"]
     state: present
   when: "{{ container_images | selectattr('arch', 'defined') | list }}"
 
