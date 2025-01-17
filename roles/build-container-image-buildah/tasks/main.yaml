@@ -19,7 +19,7 @@
 - name: Build images
   become: true
   ansible.builtin.command: >-
-    buildah build-using-dockerfile {{ zj_image.path | default('.') }}
+    buildah build-using-dockerfile
     {% if containerfile %}
       --file {{ containerfile }}
     {% endif %}
@@ -42,6 +42,7 @@
     {% for tag in zj_image.tags | default(['latest']) -%}
       --manifest {{ zj_image.repository }}:{{ tag }}
     {% endfor -%}
+    {{ zj_image.path | default('.') }}
   loop: "{{ container_images }}"
   loop_control:
     loop_var: zj_image
