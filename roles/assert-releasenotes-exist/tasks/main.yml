@@ -17,8 +17,10 @@
         that: "{{ item.that }}"
         fail_msg: "{{ item.msg }}"
       loop:
-        - that: "assert_releasenotes_exist_change_files.keys() | select('match', '^releasenotes/') | length > 0"
-          msg: "Missing release note in commit message, please create one using `reno`."
+        - that:
+            - '"Skip-Release-Notes" in zuul.change_message'
+            - assert_releasenotes_exist_change_files.keys() | select('match', '^releasenotes/') | length > 0
+          msg: "Missing release note in commit message, please create one using `reno` (or add `Skip-Release-Notes` to your commit to skip)."
       loop_control:
         label: "{{ item.that }}"
       register: _assertions
