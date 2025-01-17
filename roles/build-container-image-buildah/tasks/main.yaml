@@ -65,7 +65,7 @@
 - name: Push images into buildset registry
   become: true
   ansible.builtin.command: >-
-    buildah push {{ zj_image.repository }}:{{ zuul.change }}
+    buildah push --tls-verify=false {{ zj_image.repository }}:{{ zuul.change }}
     {% for tag in zj_image.tags | default(['latest']) -%}
       docker://{{ buildset_registry_alias }}:{{ buildset_registry.port }}/{{ zj_image.repository }}:{{ tag }}
     {% endfor -%}
