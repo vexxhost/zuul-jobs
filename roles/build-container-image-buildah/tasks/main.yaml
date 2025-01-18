@@ -17,7 +17,6 @@
   when: "{{ container_images | selectattr('arch', 'defined') | list }}"
 
 - name: Build images
-  become: true
   ansible.builtin.command: >-
     buildah build-using-dockerfile
     {% if containerfile %}
@@ -50,7 +49,6 @@
     containerfile: "{{ zj_image.container_filename | default(container_filename) | default('') }}"
 
 - name: Load images into Docker daemon
-  become: true
   ansible.builtin.command: >-
     buildah push {{ zj_image.repository }}:{{ zuul.change }}
     {% for tag in zj_image.tags | default(['latest']) -%}
@@ -63,7 +61,6 @@
   when: not buildset_registry | default(false)
 
 - name: Push images into buildset registry
-  become: true
   ansible.builtin.command: >-
     buildah push --tls-verify=false {{ zj_image.repository }}:{{ zuul.change }}
     {% for tag in zj_image.tags | default(['latest']) -%}
