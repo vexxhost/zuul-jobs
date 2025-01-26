@@ -13,11 +13,11 @@
         dest: "{{ depot_tar.path }}"
         force: true
 
-    - name: Extract into /usr/local/bin
+    - name: Extract into /tmp
       become: true
       ansible.builtin.unarchive:
         src: "{{ depot_tar.path }}"
-        dest: /usr/local/bin
+        dest: /tmp
         remote_src: yes
         extra_opts: --strip-components=1
   always:
