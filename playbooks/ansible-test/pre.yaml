@@ -1,6 +1,6 @@
 - hosts: all
   roles:
-    - ensure-uv
+    - setup-uv
 
   post_tasks:
     - name: Install Galaxy collection
