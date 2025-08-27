@@ -1,0 +1,19 @@
+- hosts: all
+  tasks:
+    - name: Copy inventory file for Zuul
+      ansible.builtin.copy:
+        src: "{{ zuul.executor.inventory_file }}"
+        dest: "{{ zuul.project.src_dir }}"
+        mode: 0644
+
+    - name: Switch "ansible_host" to private IP
+      ansible.builtin.replace:
+        path: "{{ zuul.project.src_dir }}/inventory.yaml"
+        regexp: '(^\s*ansible_host:\s*).*$'
+        replace: '\1"{% raw %}{{ zuul.node.private_ipv4 }}{% endraw %}"'
+
+    - name: Run Molecule scenario
+      ansible.builtin.command:
+        cmd: uv run molecule test --destroy never -s {{ molecule_scenario }}
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
