@@ -1,4 +1,4 @@
 - job:
     name: molecule
-    pre-run: test-playbooks/molecule/pre.yaml
-    run: test-playbooks/molecule/run.yaml
+    pre-run: playbooks/molecule/pre.yaml
+    run: playbooks/molecule/run.yaml
