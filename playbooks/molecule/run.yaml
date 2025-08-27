@@ -15,5 +15,6 @@
     - name: Run Molecule scenario
       ansible.builtin.command:
         cmd: uv run molecule test --destroy never -s {{ molecule_scenario }}
+      env: "{{ molecule_environment | default({}) }}"
       args:
         chdir: "{{ zuul.project.src_dir }}"
