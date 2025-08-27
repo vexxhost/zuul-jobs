@@ -1,0 +1,4 @@
+- job:
+    name: pre-commit
+    pre-run: playbooks/pre-commit/pre.yaml
+    run: playbooks/pre-commit/run.yaml

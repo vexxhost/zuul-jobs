@@ -1,0 +1,7 @@
+- hosts: all
+  tasks:
+    - name: Run "pre-commit"
+      ansible.builtin.command:
+        cmd: uvx pre-commit run --show-diff-on-failure --color=always --all-files
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
