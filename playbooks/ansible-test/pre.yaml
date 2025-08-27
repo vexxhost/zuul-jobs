@@ -1,0 +1,10 @@
+- hosts: all
+  roles:
+    - ensure-uv
+
+  post_tasks:
+    - name: Install Galaxy collection
+      ansible.builtin.command:
+        cmd: uv run ansible-galaxy collection install .
+      args:
+        chdir: "{{ zuul.project.src_dir }}"

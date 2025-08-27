@@ -2,3 +2,8 @@
     name: molecule
     pre-run: playbooks/molecule/pre.yaml
     run: playbooks/molecule/run.yaml
+
+- job:
+    name: ansible-test
+    pre-run: playbooks/ansible-test/pre.yaml
+    run: playbooks/ansible-test/run.yaml
