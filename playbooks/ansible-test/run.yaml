@@ -2,7 +2,7 @@
   tasks:
     - name: Load Ansible collection Galaxy metadata
       ansible.builtin.set_fact:
-        ansible_test_galaxy_yml: "{{ lookup('file', [zuul.executor.src_root, zuul.project.src_dir, 'galaxy.yml'] | path_join) | from_yaml }}"
+        ansible_test_galaxy_yml: "{{ lookup('file', [zuul.executor.work_root, zuul.project.src_dir, 'galaxy.yml'] | path_join) | from_yaml }}"
 
     - name: Get Python version
       ansible.builtin.command:
