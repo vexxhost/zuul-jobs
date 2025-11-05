@@ -12,7 +12,7 @@
       ansible.builtin.replace:
         path: "{{ zuul.project.src_dir }}/inventory.yaml"
         regexp: '(^\s*ansible_host:\s*).*$'
-        replace: '\1"{% raw %}{{ zuul.node.private_ipv4 }}{% endraw %}"'
+        replace: '\1"{% raw %}{{ nodepool.private_ipv4 }}{% endraw %}"'
 
     - name: Run Molecule scenario
       run_once: true
