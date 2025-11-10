@@ -3,10 +3,9 @@
     - name: Load metadata
       ansible.builtin.set_fact:
         ansible_test_galaxy_yml: "{{ lookup('file', [zuul.executor.work_root, zuul.project.src_dir, 'galaxy.yml'] | path_join) | from_yaml }}"
-        ansible_test_python_version: "{{ lookup('file', [zuul.executor.work_root, zuul.project.src_dir, '.python-version'] | path_join) }}"
 
     - name: Run "ansible-test"
       ansible.builtin.command:
-        cmd: uv run ansible-test units --python {{ ansible_test_python_version }}
+        cmd: uv run ansible-test units
       args:
         chdir: "{{ ansible_env.HOME }}/.ansible/collections/ansible_collections/{{ ansible_test_galaxy_yml.namespace }}/{{ ansible_test_galaxy_yml.name }}"
