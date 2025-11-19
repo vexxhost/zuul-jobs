@@ -1,0 +1,5 @@
+- nodeset:
+    name: ubuntu-noble
+    nodes:
+      name: ubuntu-noble
+      label: ubuntu-noble
