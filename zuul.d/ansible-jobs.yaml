@@ -2,6 +2,8 @@
     name: molecule
     pre-run: playbooks/molecule/pre.yaml
     run: playbooks/molecule/run.yaml
+    vars:
+      molecule_scenario: default
 
 - job:
     name: ansible-test
