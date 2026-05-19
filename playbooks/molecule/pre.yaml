@@ -1,3 +1,17 @@
 - hosts: all
   roles:
     - setup-uv
+  tasks:
+    - name: Install Ansible collection siblings
+      molecule_install_galaxy_sibling_collections:
+        project_dir: "{{ zuul.project.src_dir }}"
+        workspace_dir: "{{ ansible_user_dir }}"
+        projects: "{{ zuul.projects.values() | list }}"
+        build_refs: >-
+          {{ zuul.get('build_refs', zuul.get('buildset_refs', []))
+             + zuul.get('items', []) }}
+        collections_path: "{{ ansible_user_dir }}/.ansible/collections"
+      when:
+        - molecule_install_collection_siblings
+        - zuul.projects is defined
+      run_once: true
