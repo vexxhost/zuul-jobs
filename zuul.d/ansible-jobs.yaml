@@ -3,7 +3,24 @@
     pre-run: playbooks/molecule/pre.yaml
     run: playbooks/molecule/run.yaml
     vars:
+      molecule_install_collection_siblings: true
       molecule_scenario: default
+    description: |
+      Run Molecule tests.
+
+      .. zuul:jobvar:: molecule_install_collection_siblings
+         :default: true
+
+         Install checked-out Ansible collection projects which satisfy
+         collection dependencies from the project under test before Molecule
+         runs.  Collection projects are checked out to the highest local
+         release tag matching the Galaxy dependency spec, except when they are
+         part of the current buildset, where the Zuul speculative checkout is
+         installed directly.
+
+      .. zuul:jobvar:: molecule_scenario
+
+         Molecule scenario to run.
 
 - job:
     name: ansible-test
