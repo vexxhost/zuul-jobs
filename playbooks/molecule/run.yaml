@@ -1,18 +1,32 @@
 - hosts: all
   tasks:
+    - name: Check inventory directories
+      run_once: true
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: inventory_path_stats
+      loop:
+        - "{{ zuul.project.src_dir }}"
+        - "{{ zuul.project.src_dir }}/molecule/{{ molecule_scenario }}/inventory"
+        - "{{ zuul.project.src_dir }}/extensions/molecule/{{ molecule_scenario }}/inventory"
+
     - name: Copy inventory file for Zuul
       run_once: true
       ansible.builtin.copy:
         src: "{{ zuul.executor.inventory_file }}"
-        dest: "{{ zuul.project.src_dir }}"
-        mode: 0644
+        dest: "{{ item.item }}"
+        mode: "0644"
+      loop: "{{ inventory_path_stats.results }}"
+      when: item.stat.isdir | default(false)
 
     - name: Switch "ansible_host" to private IP
       run_once: true
       ansible.builtin.replace:
-        path: "{{ zuul.project.src_dir }}/inventory.yaml"
+        path: "{{ item.item }}/inventory.yaml"
         regexp: '(^\s*ansible_host:\s*).*$'
         replace: '\1"{% raw %}{{ nodepool.private_ipv4 }}{% endraw %}"'
+      loop: "{{ inventory_path_stats.results }}"
+      when: item.stat.isdir | default(false)
 
     - name: Run Molecule scenario
       run_once: true
