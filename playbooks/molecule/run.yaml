@@ -4,6 +4,7 @@
       run_once: true
       ansible.builtin.stat:
         path: "{{ item }}"
+        follow: true
       register: inventory_path_stats
       loop:
         - "{{ zuul.project.src_dir }}"
