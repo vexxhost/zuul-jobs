@@ -1,7 +1,10 @@
 - hosts: all
   tasks:
+    # NOTE: pre-commit-uv makes pre-commit create the hook environments with
+    #       uv, which is faster and downloads the Python version a hook asks
+    #       for (language_version) when the node does not have it.
     - name: Run "pre-commit"
       ansible.builtin.command:
-        cmd: uvx pre-commit run --show-diff-on-failure --color=always --all-files
+        cmd: uvx --with pre-commit-uv pre-commit run --show-diff-on-failure --color=always --all-files
       args:
         chdir: "{{ zuul.project.src_dir }}"
