@@ -1,14 +1,14 @@
+# NOTE: Zuul runs pre-run and run playbooks as separate ansible-playbook
+#       invocations, so facts set here do not reach the rebasebot role;
+#       install into a fixed directory that both roles default to.
 - name: Install rebasebot
   ansible.builtin.command:
     cmd: /usr/local/bin/uv tool install --force git+{{ rebasebot_repo }}@{{ rebasebot_ref }}
+  environment:
+    UV_TOOL_BIN_DIR: "{{ rebasebot_bin_dir }}"
   changed_when: true
 
-- name: Find the uv tool binary directory
+- name: Print rebasebot version information
   ansible.builtin.command:
-    cmd: /usr/local/bin/uv tool dir --bin
-  register: _rebasebot_bin_dir
+    cmd: "{{ rebasebot_bin_dir }}/rebasebot --help"
   changed_when: false
-
-- name: Set rebasebot executable
-  ansible.builtin.set_fact:
-    rebasebot_executable: "{{ _rebasebot_bin_dir.stdout | trim }}/rebasebot"
