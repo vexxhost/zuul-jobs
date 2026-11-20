@@ -13,6 +13,39 @@
     quiet: true
   no_log: true
 
+# NOTE: Upstream deletes branches when a release reaches end of life (only
+#       an <release>-eol tag remains), so there is nothing left to sync.
+- name: Check that the upstream branch exists
+  ansible.builtin.command:
+    argv:
+      - git
+      - ls-remote
+      - --exit-code
+      - --heads
+      - "https://github.com/{{ rebasebot_source.split(':')[0] }}"
+      - "{{ rebasebot_source.split(':', 1)[1] }}"
+  register: _rebasebot_source_branch
+  changed_when: false
+  failed_when: _rebasebot_source_branch.rc not in [0, 2]
+
+- name: Report missing upstream branch
+  when: _rebasebot_source_branch.rc == 2
+  ansible.builtin.debug:
+    msg: >-
+      {{ rebasebot_source }} does not exist (end of life upstream); there is
+      nothing to sync.
+
+- name: Stop when the upstream branch does not exist
+  when:
+    - _rebasebot_source_branch.rc == 2
+    - not rebasebot_fail_on_missing_source | bool
+  ansible.builtin.meta: end_host
+
+- name: Fail when the upstream branch does not exist
+  when: _rebasebot_source_branch.rc == 2
+  ansible.builtin.fail:
+    msg: "{{ rebasebot_source }} does not exist."
+
 - name: Create rebasebot working directory
   ansible.builtin.command:
     cmd: git init --quiet {{ rebasebot_workdir }}
