@@ -1,0 +1,65 @@
+- name: Validate rebasebot variables
+  ansible.builtin.assert:
+    that:
+      - rebasebot_source is defined and ':' in rebasebot_source
+      - rebasebot_dest is defined and ':' in rebasebot_dest
+      - rebasebot_rebase is defined and ':' in rebasebot_rebase
+      - rebasebot_github_app.app_id is defined
+      - rebasebot_github_app.app_key is defined
+    fail_msg: >-
+      rebasebot_source, rebasebot_dest and rebasebot_rebase must be set as
+      org/repo:branch, and rebasebot_github_app must provide app_id and app_key.
+    quiet: true
+  no_log: true
+
+- name: Create rebasebot working directory
+  ansible.builtin.command:
+    cmd: git init --quiet {{ rebasebot_workdir }}
+    creates: "{{ rebasebot_workdir }}/.git"
+
+# NOTE: rebasebot rewrites local branches, so it cannot work inside the Zuul
+#       checkout itself; borrow its objects instead so only new objects are
+#       fetched from GitHub.
+- name: Borrow objects from the Zuul checkout of the destination repository
+  vars:
+    _rebasebot_dest_project: "github.com/{{ rebasebot_dest.split(':')[0] }}"
+  when: _rebasebot_dest_project in zuul.projects
+  ansible.builtin.copy:
+    content: "{{ ansible_user_dir }}/{{ zuul.projects[_rebasebot_dest_project].src_dir }}/.git/objects\n"
+    dest: "{{ rebasebot_workdir }}/.git/objects/info/alternates"
+    mode: "0644"
+
+- name: Run rebasebot
+  block:
+    - name: Write GitHub App private key
+      ansible.builtin.copy:
+        content: "{{ rebasebot_github_app.app_key }}"
+        dest: "{{ rebasebot_key_file }}"
+        mode: "0600"
+      no_log: true
+
+    - name: Run rebasebot
+      ansible.builtin.command:
+        argv: >-
+          {{
+            [rebasebot_executable,
+             '--source', 'https://github.com/' ~ rebasebot_source,
+             '--dest', rebasebot_dest,
+             '--rebase', rebasebot_rebase,
+             '--github-app-id', rebasebot_github_app.app_id | string,
+             '--github-app-key', rebasebot_key_file,
+             '--github-cloner-id', rebasebot_github_app.app_id | string,
+             '--github-cloner-key', rebasebot_key_file,
+             '--git-username', rebasebot_git_username,
+             '--git-email', rebasebot_git_email,
+             '--tag-policy', rebasebot_tag_policy,
+             '--working-dir', rebasebot_workdir]
+            + (['--dry-run'] if rebasebot_dry_run | bool else [])
+            + rebasebot_extra_args
+          }}
+      changed_when: true
+  always:
+    - name: Remove GitHub App private key
+      ansible.builtin.file:
+        path: "{{ rebasebot_key_file }}"
+        state: absent

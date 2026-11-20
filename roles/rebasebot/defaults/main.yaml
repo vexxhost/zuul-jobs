@@ -1,0 +1,8 @@
+rebasebot_tag_policy: strict
+rebasebot_git_username: vexxhost-ci[bot]
+rebasebot_git_email: vexxhost-ci[bot]@users.noreply.github.com
+rebasebot_dry_run: false
+rebasebot_extra_args: []
+rebasebot_workdir: "{{ ansible_user_dir }}/rebasebot-work"
+rebasebot_executable: rebasebot
+rebasebot_key_file: "{{ ansible_user_dir }}/.rebasebot-app.pem"

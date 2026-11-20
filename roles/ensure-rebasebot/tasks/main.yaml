@@ -1,0 +1,14 @@
+- name: Install rebasebot
+  ansible.builtin.command:
+    cmd: /usr/local/bin/uv tool install --force git+{{ rebasebot_repo }}@{{ rebasebot_ref }}
+  changed_when: true
+
+- name: Find the uv tool binary directory
+  ansible.builtin.command:
+    cmd: /usr/local/bin/uv tool dir --bin
+  register: _rebasebot_bin_dir
+  changed_when: false
+
+- name: Set rebasebot executable
+  ansible.builtin.set_fact:
+    rebasebot_executable: "{{ _rebasebot_bin_dir.stdout | trim }}/rebasebot"
