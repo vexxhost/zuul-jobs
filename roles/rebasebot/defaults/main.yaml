@@ -9,6 +9,7 @@ rebasebot_tag_policy: strict
 rebasebot_git_username: vexxhost-ci[bot]
 rebasebot_git_email: vexxhost-ci[bot]@users.noreply.github.com
 rebasebot_dry_run: false
+rebasebot_fail_on_missing_source: false
 rebasebot_extra_args: []
 rebasebot_workdir: "{{ ansible_user_dir }}/rebasebot-work"
 rebasebot_executable: "{{ ansible_user_dir }}/.local/bin/rebasebot"

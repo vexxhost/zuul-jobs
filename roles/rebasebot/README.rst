@@ -69,6 +69,13 @@ objects missing from it are fetched from GitHub.
 
    Git author email for commits created by rebasebot.
 
+.. zuul:rolevar:: rebasebot_fail_on_missing_source
+   :default: false
+
+   By default the role succeeds without doing anything when the upstream
+   branch does not exist, as happens when upstream deletes a branch at end
+   of life.  Set to true to fail instead.
+
 .. zuul:rolevar:: rebasebot_dry_run
    :default: false
 
