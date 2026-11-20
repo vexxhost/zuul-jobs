@@ -85,6 +85,6 @@ objects missing from it are fetched from GitHub.
    Git working directory used by rebasebot.
 
 .. zuul:rolevar:: rebasebot_executable
-   :default: rebasebot
+   :default: {{ ansible_user_dir }}/.local/bin/rebasebot
 
-   rebasebot command; set by the ``ensure-rebasebot`` role.
+   rebasebot command, as installed by the ``ensure-rebasebot`` role.
