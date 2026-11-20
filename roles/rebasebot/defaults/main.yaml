@@ -1,3 +1,10 @@
+# By default the job syncs the branch of the project it runs for (for
+# example, a periodic item for vexxhost/octavia stable/2026.1) with the same
+# branch of rebasebot_upstream_project.
+rebasebot_upstream_branch: "{{ zuul.branch }}"
+rebasebot_source: "{{ rebasebot_upstream_project }}:{{ rebasebot_upstream_branch }}"
+rebasebot_dest: "{{ zuul.project.name }}:{{ zuul.branch }}"
+rebasebot_rebase: "{{ zuul.project.name }}:rebasebot/{{ zuul.branch | replace('/', '-') }}"
 rebasebot_tag_policy: strict
 rebasebot_git_username: vexxhost-ci[bot]
 rebasebot_git_email: vexxhost-ci[bot]@users.noreply.github.com

@@ -7,24 +7,39 @@ rebasebot rebases the downstream commits on ``rebasebot_dest`` onto
 GitHub App, which must be able to read the source repository and write
 contents and pull requests on the destination repository.
 
-If the destination repository is part of the job (for example, listed in
+By default it syncs the branch of the project the job runs for, so attaching
+the job to a fork's ``periodic`` pipeline syncs every protected branch it
+runs on.  If the destination repository is part of the job (for example, listed in
 ``required-projects``), its Zuul checkout is used as a git alternate so only
 objects missing from it are fetched from GitHub.
 
 **Role Variables**
 
+.. zuul:rolevar:: rebasebot_upstream_project
+
+   Upstream repository on GitHub, as ``org/repo`` (for example
+   ``openstack/octavia``).  Required unless ``rebasebot_source`` is set.
+
+.. zuul:rolevar:: rebasebot_upstream_branch
+   :default: {{ zuul.branch }}
+
+   Upstream branch to sync with.
+
 .. zuul:rolevar:: rebasebot_source
+   :default: {{ rebasebot_upstream_project }}:{{ rebasebot_upstream_branch }}
 
    Upstream repository and branch on GitHub, as ``org/repo:branch``.
 
 .. zuul:rolevar:: rebasebot_dest
+   :default: {{ zuul.project.name }}:{{ zuul.branch }}
 
    Downstream repository and branch on GitHub, as ``org/repo:branch``.
 
 .. zuul:rolevar:: rebasebot_rebase
+   :default: {{ zuul.project.name }}:rebasebot/<branch>
 
    Repository and branch on GitHub to push the rebased result to, as
-   ``org/repo:branch``.
+   ``org/repo:branch``.  Slashes in the branch name are replaced by dashes.
 
 .. zuul:rolevar:: rebasebot_github_app
 

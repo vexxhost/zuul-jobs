@@ -1,14 +1,15 @@
 - name: Validate rebasebot variables
   ansible.builtin.assert:
     that:
-      - rebasebot_source is defined and ':' in rebasebot_source
-      - rebasebot_dest is defined and ':' in rebasebot_dest
-      - rebasebot_rebase is defined and ':' in rebasebot_rebase
+      - "':' in rebasebot_source"
+      - "':' in rebasebot_dest"
+      - "':' in rebasebot_rebase"
       - rebasebot_github_app.app_id is defined
       - rebasebot_github_app.app_key is defined
     fail_msg: >-
-      rebasebot_source, rebasebot_dest and rebasebot_rebase must be set as
-      org/repo:branch, and rebasebot_github_app must provide app_id and app_key.
+      rebasebot_source, rebasebot_dest and rebasebot_rebase must be
+      org/repo:branch (set rebasebot_upstream_project or rebasebot_source),
+      and rebasebot_github_app must provide app_id and app_key.
     quiet: true
   no_log: true
 
