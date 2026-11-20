@@ -2,3 +2,58 @@
     name: pre-commit
     pre-run: playbooks/pre-commit/pre.yaml
     run: playbooks/pre-commit/run.yaml
+
+- job:
+    name: rebasebot
+    pre-run: playbooks/rebasebot/pre.yaml
+    run: playbooks/rebasebot/run.yaml
+    vars:
+      rebasebot_tag_policy: strict
+    description: |
+      Sync a downstream fork branch with its upstream branch using
+      `rebasebot <https://github.com/openshift-eng/rebasebot>`_, opening (or
+      updating) a pull request on the fork.
+
+      By default it syncs the branch of the project the job runs for, so the
+      intended use is to attach it to a fork in a post-review pipeline such
+      as ``periodic``, which runs it once per protected branch.
+
+      Child jobs must provide the GitHub App credentials as a secret named
+      ``rebasebot_github_app`` (with ``app_id`` and ``app_key``) using
+      ``pass-to-parent: true``.
+
+      .. zuul:jobvar:: rebasebot_upstream_project
+
+         Upstream repository on GitHub, as ``org/repo``.  Required unless
+         ``rebasebot_source`` is set.
+
+      .. zuul:jobvar:: rebasebot_upstream_branch
+         :default: {{ zuul.branch }}
+
+         Upstream branch to sync with.
+
+      .. zuul:jobvar:: rebasebot_source
+         :default: {{ rebasebot_upstream_project }}:{{ rebasebot_upstream_branch }}
+
+         Upstream repository and branch on GitHub, as ``org/repo:branch``.
+
+      .. zuul:jobvar:: rebasebot_dest
+         :default: {{ zuul.project.name }}:{{ zuul.branch }}
+
+         Downstream repository and branch on GitHub, as ``org/repo:branch``.
+
+      .. zuul:jobvar:: rebasebot_rebase
+         :default: {{ zuul.project.name }}:rebasebot/<branch>
+
+         Repository and branch on GitHub to push the rebased result to.
+
+      .. zuul:jobvar:: rebasebot_tag_policy
+         :default: strict
+
+         Which downstream commits to carry, based on their ``UPSTREAM:``
+         subject prefix: ``strict``, ``soft`` or ``none``.
+
+      .. zuul:jobvar:: rebasebot_ref
+         :default: fc1edb4e18f8d7e025ac6754449f637716610740
+
+         Git ref of rebasebot to install.
