@@ -1,0 +1,47 @@
+- name: Validate repository dispatch variables
+  ansible.builtin.assert:
+    that:
+      - github_repository_dispatch_repository is defined
+      - github_repository_dispatch_repository is match('^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')
+      - github_repository_dispatch_event_type is defined
+      - github_repository_dispatch_event_type | length > 0
+      - github_repository_dispatch_client_payload is mapping
+      - github_repository_dispatch_client_payload | length <= 10
+    fail_msg: >-
+      github_repository_dispatch_repository must be org/repo,
+      github_repository_dispatch_event_type must be set and
+      github_repository_dispatch_client_payload must be a mapping with at
+      most 10 top-level keys.
+    quiet: true
+
+- name: Send {{ github_repository_dispatch_event_type }} to {{ github_repository_dispatch_repository }}
+  ansible.builtin.uri:
+    url: "{{ github_repository_dispatch_api_url }}/repos/{{ github_repository_dispatch_repository }}/dispatches"
+    method: POST
+    headers:
+      Accept: application/vnd.github+json
+      Authorization: "Bearer {{ github_repository_dispatch_token }}"
+      X-GitHub-Api-Version: "2022-11-28"
+    body_format: json
+    body:
+      event_type: "{{ github_repository_dispatch_event_type }}"
+      client_payload: "{{ github_repository_dispatch_client_payload }}"
+    status_code: [204]
+  register: _github_repository_dispatch
+  failed_when: false
+  no_log: true
+
+- name: Check the repository dispatch
+  ansible.builtin.assert:
+    that:
+      - _github_repository_dispatch.status == 204
+    fail_msg: >-
+      Sending {{ github_repository_dispatch_event_type }} to
+      {{ github_repository_dispatch_repository }} failed with HTTP
+      {{ _github_repository_dispatch.status }}:
+      {{ (_github_repository_dispatch.json | default({})).message | default(_github_repository_dispatch.msg | default('')) }}
+    success_msg: >-
+      Sent {{ github_repository_dispatch_event_type }} to
+      {{ github_repository_dispatch_repository }}:
+      {{ github_repository_dispatch_client_payload | to_json }}
+    quiet: false

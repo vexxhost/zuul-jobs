@@ -1,0 +1,127 @@
+- name: Validate GitHub App token variables
+  ansible.builtin.assert:
+    that:
+      - github_app_token_app.app_id is defined
+      - github_app_token_app.app_key is defined
+      - github_app_token_repository is defined
+      - github_app_token_repository is match('^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')
+    fail_msg: >-
+      github_app_token_app must provide app_id and app_key, and
+      github_app_token_repository must be org/repo.
+    quiet: true
+  no_log: true
+
+- name: Create a working directory for the GitHub App JWT
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: github-app-token
+  register: _github_app_token_tmp
+
+- name: Mint a GitHub App installation token
+  block:
+    # NOTE: A GitHub App authenticates with a JWT signed with its private key
+    #       (RS256, at most 10 minutes long); iat is backdated for clock drift.
+    - name: Prepare the JWT signing input
+      vars:
+        _app_id: "{{ github_app_token_app.app_id | string }}"
+        _now: "{{ now(utc=true).timestamp() | int }}"
+      ansible.builtin.set_fact:
+        _github_app_token_signing_input: >-
+          {{ {'alg': 'RS256', 'typ': 'JWT'}
+             | to_json(separators=[',', ':']) | b64encode
+             | replace('+', '-') | replace('/', '_') | replace('=', '') }}.{{
+             {'iat': _now | int - 60,
+              'exp': _now | int + 540,
+              'iss': _app_id}
+             | to_json(separators=[',', ':']) | b64encode
+             | replace('+', '-') | replace('/', '_') | replace('=', '') }}
+
+    - name: Write the JWT signing input
+      ansible.builtin.copy:
+        content: "{{ _github_app_token_signing_input }}"
+        dest: "{{ _github_app_token_tmp.path }}/jwt"
+        mode: "0600"
+
+    - name: Sign the JWT with the GitHub App private key
+      community.crypto.openssl_signature:
+        privatekey_content: "{{ github_app_token_app.app_key }}"
+        path: "{{ _github_app_token_tmp.path }}/jwt"
+      register: _github_app_token_signature
+      no_log: true
+
+    - name: Assemble the JWT
+      ansible.builtin.set_fact:
+        _github_app_token_jwt: >-
+          {{ _github_app_token_signing_input }}.{{
+             _github_app_token_signature.signature
+             | replace('+', '-') | replace('/', '_') | replace('=', '') }}
+      no_log: true
+
+    - name: Find the GitHub App installation for {{ github_app_token_repository }}
+      ansible.builtin.uri:
+        url: "{{ github_app_token_api_url }}/repos/{{ github_app_token_repository }}/installation"
+        headers:
+          Accept: application/vnd.github+json
+          Authorization: "Bearer {{ _github_app_token_jwt }}"
+          X-GitHub-Api-Version: "2022-11-28"
+        status_code: [200]
+      register: _github_app_token_installation
+      failed_when: false
+      no_log: true
+
+    - name: Check the GitHub App installation lookup
+      ansible.builtin.assert:
+        that:
+          - _github_app_token_installation.status == 200
+        fail_msg: >-
+          Looking up the GitHub App installation for
+          {{ github_app_token_repository }} failed with HTTP
+          {{ _github_app_token_installation.status }}:
+          {{ (_github_app_token_installation.json | default({})).message | default(_github_app_token_installation.msg | default('')) }}
+        quiet: true
+
+    - name: Create an installation token for {{ github_app_token_repository }}
+      ansible.builtin.uri:
+        url: "{{ github_app_token_api_url }}/app/installations/{{ _github_app_token_installation.json.id }}/access_tokens"
+        method: POST
+        headers:
+          Accept: application/vnd.github+json
+          Authorization: "Bearer {{ _github_app_token_jwt }}"
+          X-GitHub-Api-Version: "2022-11-28"
+        body_format: json
+        body: >-
+          {{ {'repositories': [github_app_token_repository.split('/')[1]]}
+             | combine({'permissions': github_app_token_permissions}
+                       if github_app_token_permissions else {}) }}
+        status_code: [201]
+      register: _github_app_token_response
+      failed_when: false
+      no_log: true
+
+    - name: Check the installation token request
+      ansible.builtin.assert:
+        that:
+          - _github_app_token_response.status == 201
+        fail_msg: >-
+          Creating an installation token for {{ github_app_token_repository }}
+          failed with HTTP {{ _github_app_token_response.status }}:
+          {{ (_github_app_token_response.json | default({})).message | default(_github_app_token_response.msg | default('')) }}
+        quiet: true
+
+    - name: Save the installation token
+      ansible.builtin.set_fact:
+        github_app_token: "{{ _github_app_token_response.json.token }}"
+        github_app_token_expires_at: "{{ _github_app_token_response.json.expires_at }}"
+      no_log: true
+
+    - name: Report the installation token permissions
+      ansible.builtin.debug:
+        msg: >-
+          Installation token for {{ github_app_token_repository }} expires at
+          {{ github_app_token_expires_at }} with permissions
+          {{ _github_app_token_response.json.permissions | to_json }}.
+  always:
+    - name: Remove the GitHub App JWT working directory
+      ansible.builtin.file:
+        path: "{{ _github_app_token_tmp.path }}"
+        state: absent
