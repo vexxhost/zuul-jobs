@@ -1,0 +1,5 @@
+depot_version: 2.103.33
+depot_checksums:
+  amd64: aefc02ba61073bcadc7bc9453d7955e0c9b3f34ed33b5d66771e80efd6f8ff12
+  arm64: e6d871a52e0bd42ca874a319fa1aa148e9fe5392f5af3b410786f8dc11165f48
+depot_install_prefix: /usr/local

@@ -1,0 +1,20 @@
+- name: Download the Depot CLI
+  ansible.builtin.get_url:
+    url: "https://github.com/depot/cli/releases/download/v{{ depot_version }}/depot_{{ depot_version }}_linux_{{ _depot_arch }}.tar.gz"
+    checksum: "sha256:{{ depot_checksums[_depot_arch] }}"
+    dest: /tmp/depot.tar.gz
+    mode: "0644"
+
+- name: Install the Depot CLI
+  become: true
+  ansible.builtin.unarchive:
+    src: /tmp/depot.tar.gz
+    dest: "{{ depot_install_prefix }}"
+    remote_src: true
+    extra_opts:
+      - bin/depot
+
+- name: Print the Depot CLI version
+  ansible.builtin.command:
+    cmd: "{{ depot_install_prefix }}/bin/depot --version"
+  changed_when: false
